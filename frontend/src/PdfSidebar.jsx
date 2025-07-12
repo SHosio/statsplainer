@@ -10,7 +10,7 @@ import {
 } from "react-resizable-panels";
 import { apiCallPostText } from './ApiCalls'; // Import API call function
 
-export const PdfSidebar = ({ file, setTaskCompletion, isFromDashboard = false }) => {
+export const PdfSidebar = ({ file, setTaskCompletion, isFromDashboard = false, sessionId, uploadedFilename }) => {
   const [sideBarTriggered, setSideBarTriggered] = useState(false);
   const [chatType, setChatType] = useState("Definition"); // Mode selected
   const [isLoading, setIsLoading] = useState(false); // State for loading indicator
@@ -78,77 +78,12 @@ export const PdfSidebar = ({ file, setTaskCompletion, isFromDashboard = false })
   const handleCloseTooltip = () => setOpen(false);
 
 
-  // add current file to the localStorage
-  useEffect(() => {
-    if (file?.name) {
-      const existingFiles = JSON.parse(localStorage.getItem("pdf_files") || '[]');
-      if (!existingFiles.includes(file.name)) {
-        localStorage.setItem('pdf_files', JSON.stringify([...existingFiles, file?.name]));
-      }
-    }
-  }, [file]);
-
-  //Load chat history of the uploaded pdf
-  useEffect(() => {
-    const fetchHistory = async () => {
-      try{
-        const pdfFiles = JSON.parse(localStorage.getItem("pdf_files") || '[]');
-        if(pdfFiles.includes(file.name)) {
-          //fetch pdf chat history from backend
-          const response = await fetch(`http://localhost:5000/retrieve_history/${encodeURIComponent(file.name)}`, {
-            method: "GET", credentials: "include"
-          });
-
-          if (response.status !== 404) {
-            const data = await response.json();
-            console.log("Successfully loaded chat history", data);
-            setMessageDefinition(data.Definition);
-            setMessageRealWorldAnalogy(data["Real world analogy"]);
-            setMessageELI5(data.ELI5);
-          }
-
-        }
-      } catch (error) {
-        console.error("Error loading chat history", error);
-      }
-
-      isInitialMount.current = false;
-    };
-
-    fetchHistory();
-
-    
-  }, [file]);
 
 
-  // update chathistory to the backend everytime user interact in the sidebar message 
-  useEffect(() => {
-    if (file?.name && messageDefinition.length > 0) {
-      const history ={
-        Definition: messageDefinition,
-        "Real world analogy": messageRealWorldAnalogy,
-        ELI5: messageELI5,
-      };
 
-      fetch(`http://localhost:5000/upload_history/${encodeURIComponent(file.name)}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({content:history})
-      })
-      .then( response => {
-        if(!response.ok) {
-          throw new Error (`HTTP error ! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .catch(error => {
-        console.error(error);
-      })
-    }
-  }, [file?.name, messageDefinition,messageRealWorldAnalogy,messageELI5]);
+
+
+
 
 
 
@@ -178,13 +113,16 @@ export const PdfSidebar = ({ file, setTaskCompletion, isFromDashboard = false })
 
   // Function to handle PDF highlight/snip and send to all modes
   const handlePdfHighlight = async (highlightData) => {
-    if (!file || !file.name) {
+    if (!file || !(uploadedFilename || file.name)) {
       console.error("No active file to send highlight from.");
       return;
     }
 
     let userMessage;
-    let basePayload = { filename: file.name };
+    let basePayload = { 
+      filename: uploadedFilename || file.name,
+      session_id: sessionId || localStorage.getItem('session_id')
+    };
     let isImage = false;
 
     if (highlightData.type === 'text' && highlightData.text) {
@@ -244,7 +182,7 @@ export const PdfSidebar = ({ file, setTaskCompletion, isFromDashboard = false })
           {/* Pass handlePdfHighlight even when sidebar isn't triggered yet,
               though the confirmation button won't appear until highlight */}
           {/* <PdfUpload file={file} setSideBarTriggered={setSideBarTriggered} onHighlightConfirm={handlePdfHighlight} setIsLoading={setIsLoading} /> */}
-          <PdfUpload file={file} setSideBarTriggered={setSideBarTriggered} onHighlightConfirm={handlePdfHighlight} setIsLoading={setIsLoading} highlightCompletionFunc={highlightCompletionFunc} modeCompletion={modeCompletion}/>
+          <PdfUpload file={file} setSideBarTriggered={setSideBarTriggered} onHighlightConfirm={handlePdfHighlight} setIsLoading={setIsLoading} highlightCompletionFunc={highlightCompletionFunc} modeCompletion={modeCompletion} sessionId={sessionId} uploadedFilename={uploadedFilename}/>
         </Box>
       ) : (
         <Box sx={{ width: '100vw', height: containerHeight }}>
@@ -256,7 +194,7 @@ export const PdfSidebar = ({ file, setTaskCompletion, isFromDashboard = false })
               style={{ overflow: 'hidden' }}
             >
               {/* Pass handlePdfHighlight here as well */}
-              <PdfUpload file={file} setSideBarTriggered={setSideBarTriggered} onHighlightConfirm={handlePdfHighlight} setIsLoading={setIsLoading} highlightCompletionFunc={highlightCompletionFunc} modeCompletion={modeCompletion}/>
+              <PdfUpload file={file} setSideBarTriggered={setSideBarTriggered} onHighlightConfirm={handlePdfHighlight} setIsLoading={setIsLoading} highlightCompletionFunc={highlightCompletionFunc} modeCompletion={modeCompletion} sessionId={sessionId} uploadedFilename={uploadedFilename}/>
             </Panel>
 
             <PanelResizeHandle

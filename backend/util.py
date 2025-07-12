@@ -45,9 +45,3 @@ def pass_to_google_forms(user_id):
     }
     requests.post(url, data=data)
     
-def cleanup_history():
-    history_folder = os.path.abspath(os.path.join("..", "history_uploads"))
-    for filename in os.listdir(history_folder):
-        file_path = os.path.join(history_folder, filename)
-        if os.path.isfile(file_path):
-            os.remove(file_path)

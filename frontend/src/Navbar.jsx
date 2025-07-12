@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { AppBar, Toolbar, Button, Box, Typography, IconButton } from '@mui/material';
-import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded';
+
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 
 export const NavBar = ({ page, pdfUploaded, setPdfUploaded, setUploadedFile, feedBackButton, setPopUpDisplay }) => {
@@ -39,24 +39,14 @@ export const NavBar = ({ page, pdfUploaded, setPdfUploaded, setUploadedFile, fee
   }
 
   let nav = <></>;
-  if (page === '/history') {
+  if (page === '/dashboard') {
     nav = (
       <IconButton color="inherit" variant="contained" onClick={() => reset()} component={Link} to="/" sx={buttonStyles} aria-label="Add New">
         <AddRoundedIcon />
       </IconButton>
     );
-  } else if (page === '/dashboard') {
-    nav = (
-      <>
-        <IconButton color="inherit" variant="contained" onClick={() => reset()} component={Link} to="/" sx={buttonStyles} aria-label="Add New">
-          <AddRoundedIcon />
-        </IconButton>
-      <IconButton color="inherit" variant="contained" component={Link} to="/history" sx={buttonStyles} aria-label="View History">
-        <HistoryRoundedIcon />
-      </IconButton>
-      </>
-    );
   } else {
+    // Landing page - only show add new button if PDF is uploaded
     nav = (
       <>
         {pdfUploaded && (
@@ -64,9 +54,6 @@ export const NavBar = ({ page, pdfUploaded, setPdfUploaded, setUploadedFile, fee
             <AddRoundedIcon />
           </IconButton>
         )}
-        <IconButton color="inherit" variant="contained" component={Link} to="/history" sx={buttonStyles} aria-label="View History">
-          <HistoryRoundedIcon />
-        </IconButton>
       </>
     );
   }

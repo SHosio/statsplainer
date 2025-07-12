@@ -2,10 +2,10 @@ from app import create_app
 from log_interface import log_init, log_clear
 import os
 import atexit
-from util import cleanup_history
+
 
 app = create_app()
-atexit.register(cleanup_history)
+
 
 if __name__ == "__main__":
     log_clear()

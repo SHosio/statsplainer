@@ -15,14 +15,13 @@ services:
     build: ./backend
     container_name: statsplainer_backend
     ports:
-      - "5000:5000"
+      - "5050:5000"
     environment:
       - FLASK_DEBUG=1
     env_file:
       - ./backend/.env
     volumes:
-      - ./backend/img_uploads:/app/img_uploads
-      - ./backend/pdf_uploads:/app/pdf_uploads
-      - ./backend/history_uploads:/app/history_uploads
-      - ./backend/app_log.db:/app/app_log.db
+      - ./persistent_data/pdfs:/app/pdf_uploads
+      - ./persistent_data/images:/app/img_uploads
+      - ./persistent_data/database:/app/database
 

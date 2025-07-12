@@ -14,7 +14,7 @@ import PhotoCameraRoundedIcon from '@mui/icons-material/PhotoCameraRounded';
 import worker from "pdfjs-dist/build/pdf.worker?worker";
 pdfjs.GlobalWorkerOptions.workerPort = new worker();
 
-export const PdfUpload = ({ file, setSideBarTriggered, onHighlightConfirm, highlightCompletionFunc, modeCompletion }) => { // Changed props: removed currentMode, addMessage; added onHighlightConfirm
+export const PdfUpload = ({ file, setSideBarTriggered, onHighlightConfirm, highlightCompletionFunc, modeCompletion, sessionId, uploadedFilename }) => { // Added uploadedFilename prop
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [pageScale, setPageScale] = useState(1);

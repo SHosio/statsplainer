@@ -1,6 +1,26 @@
-import { Button, Box, Typography, Backdrop } from '@mui/material';
+import { Button, Box, Typography, Backdrop, CircularProgress } from '@mui/material';
+import { useState, useEffect } from 'react';
+import { getSessionSummary } from './ApiCalls';
+import ReactMarkdown from 'react-markdown';
 
 export const FinalPopUp = ({ setPopUpDisplay, setFeedbackButton }) => {
+  const [summary, setSummary] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [showSummary, setShowSummary] = useState(false);
+
+  useEffect(() => {
+    // Get session summary when popup opens
+    getSessionSummary()
+      .then(data => {
+        setSummary(data.summary);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Failed to get session summary:', error);
+        setSummary('Unable to generate session summary at this time.');
+        setLoading(false);
+      });
+  }, []);
 
   return (
     <>
@@ -30,29 +50,67 @@ export const FinalPopUp = ({ setPopUpDisplay, setFeedbackButton }) => {
         backgroundColor: 'rgb(31, 29, 29)', 
         borderRadius: 2, 
         zIndex: 100, 
-        width: '30vw',
-        padding: '4vh 6vw'
+        width: showSummary ? '60vw' : '30vw',
+        maxHeight: '80vh',
+        padding: '4vh 6vw',
+        overflow: 'auto'
       }}>
 
       <Typography variant="h5" component="h2" sx={{ color: 'white', fontWeight: 'bold', fontSize: '1.6rem'}}>
-        How was your experience?
+        {showSummary ? 'Your Learning Summary' : 'How was your experience?'}
       </Typography >
 
+      {showSummary ? (
+        <Box sx={{ mt: 2 }}>
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+              <CircularProgress sx={{ color: 'white' }} />
+            </Box>
+          ) : (
+            <Box sx={{ 
+              backgroundColor: 'rgba(255, 255, 255, 0.1)', 
+              borderRadius: 1, 
+              padding: 2,
+              color: 'white',
+              maxHeight: '50vh',
+              overflow: 'auto'
+            }}>
+              <ReactMarkdown>{summary}</ReactMarkdown>
+            </Box>
+          )}
+        </Box>
+      ) : null}
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', gap: 1, mt: 2 }}>
-        <Button variant="contained" onClick={() => {setPopUpDisplay(false); setFeedbackButton(true);}} >
-            Complete Later
-        </Button>
-        <Button
-            variant="contained"
-            component="a"
-            href="https://docs.google.com/forms/d/e/1FAIpQLSdWEFlG2ciIRUB7LchAd1K-ka8UUF8htg6ikMpG65t15E3dBA/formResponse"
-            target="_blank"
-            rel="noopener noreferrer"
-            disabled={false}
-        >
-            Go to Feedback Form
-        </Button>
+        {!showSummary ? (
+          <>
+            <Button variant="contained" onClick={() => {setPopUpDisplay(false); setFeedbackButton(true);}} >
+                Complete Later
+            </Button>
+            <Button variant="contained" onClick={() => setShowSummary(true)} >
+                View My Learning Summary
+            </Button>
+            <Button
+                variant="contained"
+                component="a"
+                href="https://docs.google.com/forms/d/e/1FAIpQLSdWEFlG2ciIRUB7LchAd1K-ka8UUF8htg6ikMpG65t15E3dBA/formResponse"
+                target="_blank"
+                rel="noopener noreferrer"
+                disabled={false}
+            >
+                Go to Feedback Form
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button variant="contained" onClick={() => setShowSummary(false)} >
+                Back to Feedback
+            </Button>
+            <Button variant="contained" onClick={() => {setPopUpDisplay(false); setFeedbackButton(true);}} >
+                Complete Session
+            </Button>
+          </>
+        )}
       </Box>
     </Box>
     </>

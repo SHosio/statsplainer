@@ -1,4 +1,4 @@
-let BACKEND_PORT = 5000;
+let BACKEND_PORT = 5050;
 
 export const apiCallPost = (path, pdfFile) => {
     const formData = new FormData();
@@ -57,6 +57,30 @@ export const apiCallPostText = (path, body) => {
         })
         .then(data => {
             resolve(data);
+        });
+    })
+};
+
+export const getSessionSummary = () => {
+    return new Promise((resolve, reject) => {
+        fetch(`http://localhost:${BACKEND_PORT}/session-summary`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-type': 'application/json',
+            }
+        })
+        .then(response => {
+            if (response.status !== 200) {
+                reject('Failed to get session summary');
+            }
+            return response.json()
+        })
+        .then(data => {
+            resolve(data);
+        })
+        .catch(error => {
+            reject(error);
         });
     })
 };

@@ -15,8 +15,6 @@ def app():
     # Or mock os.makedirs and file operations within tests
     img_dir = tempfile.mkdtemp()
     pdf_dir = tempfile.mkdtemp()
-    hist_dir = tempfile.mkdtemp()
-
     # Create the app instance using the factory
     app = create_app()
 
@@ -26,7 +24,6 @@ def app():
         # Use temporary folders for testing to avoid polluting real folders
         'IMG_FOLDER': img_dir,
         'PDF_FOLDER': pdf_dir,
-        'HISTORY_FOLDER': hist_dir,
     })
 
 
@@ -36,7 +33,6 @@ def app():
     try:
         os.rmdir(img_dir)
         os.rmdir(pdf_dir)
-        os.rmdir(hist_dir)
     except OSError:
         # Handle cases where directories might not be empty if tests failed uncleanly
         pass
