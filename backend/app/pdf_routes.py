@@ -19,7 +19,7 @@ def upload_pdf():
         return jsonify({"error": "No PDF uploaded"}), 400
     
     file = request.files["file"]
-    user_id = request.cookies.get('user_id', 'nouser')
+    user_id = request.cookies.get('user_id')
     session_id = generate_session_id()
     # Compose new filename
     new_filename = f"user_{user_id}_{session_id}_{file.filename}"

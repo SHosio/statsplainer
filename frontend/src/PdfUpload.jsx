@@ -45,7 +45,8 @@ export const PdfUpload = ({ file, setSideBarTriggered, onHighlightConfirm, highl
     handleMouseMove,
     handleMouseUp,
     highlightedBoxes,
-    highlightReset
+    highlightReset,
+    finalizeHighlight
   } = Highlight(containerRef, pageNumber, snipHighlightSwitch, pageScale, pageElementsRef);
 
   useEffect(() => {
@@ -208,6 +209,7 @@ export const PdfUpload = ({ file, setSideBarTriggered, onHighlightConfirm, highl
             onMouseMove={(e) => e.stopPropagation()}
             onClick={() => {
               setConfirmPopup(false);
+              finalizeHighlight(); // Clear overlay after confirmation
               setSideBarTriggered(true); // Keep this to show sidebar if needed
               // Prepare data for the callback
               const highlightData = highlights[0]; // Assuming highlights[0] exists when popup is shown

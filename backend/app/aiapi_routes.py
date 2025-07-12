@@ -19,8 +19,6 @@ def test_route():
 @aiapi_routes.route("/session-summary", methods=["POST"])
 def generate_session_summary():
     user_id = request.cookies.get('user_id')
-    if user_id == "null":
-        user_id = "No user_id found."
 
     data = request.json
     session_id = data.get("session_id") if data else None
@@ -104,8 +102,6 @@ def generate_session_summary():
 @aiapi_routes.route("/explain-highlight", methods=["POST"])
 def explain_highlight():
     user_id = request.cookies.get('user_id')
-    if user_id == "null":
-        user_id = "No user_id found."
 
     if not request.is_json:
         return jsonify({"error": "Request must be JSON"}), 400

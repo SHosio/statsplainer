@@ -12,7 +12,7 @@ def upload_image():
         return jsonify({"error": "No image uploaded"}), 400
 
     file = request.files["file"]
-    user_id = request.cookies.get('user_id', 'nouser')
+    user_id = request.cookies.get('user_id')
     session_id = request.form.get('session_id') or request.args.get('session_id') or 'nosession'
     # Compose new filename with session-based naming
     random_part = str(uuid.uuid4())[:6]

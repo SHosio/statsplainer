@@ -14,7 +14,6 @@ COPY app/ app/
 COPY API.py .
 COPY util.py .
 COPY log_interface.py .
-COPY app_log.db .
 COPY ai_prompt_util.py .
 
 # Expose the port your backend listens on

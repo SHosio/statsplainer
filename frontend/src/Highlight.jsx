@@ -78,6 +78,10 @@ export const Highlight = (containerRef, pageNumber, snipHighlightSwitch, scale, 
     setHighlightedBoxes([]);
     setHighlights([]);
   }
+  // New: finalizeHighlight to clear the highlight overlay after confirmation
+  const finalizeHighlight = () => {
+    setCurrentHighlight(null);
+  };
 
   const handleMouseDown = (e) => {
     highlightReset();
@@ -255,7 +259,7 @@ export const Highlight = (containerRef, pageNumber, snipHighlightSwitch, scale, 
       }
     }
     
-    setCurrentHighlight(null);
+    // setCurrentHighlight(null); // REMOVE THIS LINE to keep overlay visible after mouse up
   };
   
   /*
@@ -356,7 +360,8 @@ export const Highlight = (containerRef, pageNumber, snipHighlightSwitch, scale, 
     handleMouseMove,
     handleMouseUp,
     highlightedBoxes,
-    highlightReset
+    highlightReset,
+    finalizeHighlight // Export the new function
   };
 };
 
