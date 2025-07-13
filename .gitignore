@@ -25,3 +25,13 @@ dist-ssr
 
 # Environment variables
 backend/.env
+
+# Ignore all files in persistent_data subfolders
+persistent_data/database/*
+persistent_data/images/*
+persistent_data/pdfs/*
+
+# But keep .gitkeep files (or any file starting with .gitkeep)
+!persistent_data/database/.gitkeep
+!persistent_data/images/.gitkeep
+!persistent_data/pdfs/.gitkeep
