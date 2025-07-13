@@ -16,7 +16,7 @@ def test_route():
     return jsonify({"message": "Test route working"})
 
 # Endpoint for generating session summary
-@aiapi_routes.route("/session-summary", methods=["POST"])
+@aiapi_routes.route("/generate-session-summary", methods=["POST"])
 def generate_session_summary():
     user_id = request.cookies.get('user_id')
 
@@ -96,19 +96,25 @@ def generate_session_summary():
         return jsonify({"summary": summary})
         
     except Exception as e:
+        import sys
+        sys.stdout.flush()
         return jsonify({"error": f"Failed to generate summary: {str(e)}"}), 500
 
 # Endpoint for handling highlighted text explanations
 @aiapi_routes.route("/explain-highlight", methods=["POST"])
 def explain_highlight():
+    # print("Step 0: About to get user_id"); import sys; sys.stdout.flush()
     user_id = request.cookies.get('user_id')
 
     if not request.is_json:
+        # print("Step 0: Request is not JSON"); import sys; sys.stdout.flush()
         return jsonify({"error": "Request must be JSON"}), 400
     
     data = request.json
+    # print("Step 1: Got data", data); import sys; sys.stdout.flush()
     
     if not data or "highlighted_text" not in data or "mode" not in data or "filename" not in data:
+        # print("Step 1.5: Missing required fields"); sys.stdout.flush()
         return jsonify({"error": "Missing highlighted_text, mode, or filename in request"}), 400
 
     highlighted_text = data["highlighted_text"]
@@ -130,9 +136,11 @@ def explain_highlight():
         image_file_path = image_filename
 
     file_path = os.path.join(current_app.config['PDF_FOLDER'], filename)
+    # print("Step 2: About to extract text from PDF"); sys.stdout.flush()
     try:
         full_text = extract_text_from_pdf(file_path)
     except Exception as e:
+        # print("Step 2.5: Failed to extract text from PDF", e); sys.stdout.flush()
         return jsonify({"error": "Failed to extract text from PDF"}), 500
     
     # Initialize empty messages array (no history)
@@ -160,7 +168,7 @@ def explain_highlight():
                 {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{image_base64}"}}
             ]
         })
-    
+    # print("Step 3: About to call API_text_input"); sys.stdout.flush()
     try:
         # Call API utility with combined text and mode-specific instructions
         # Pass image_base64 if it exists
@@ -169,14 +177,16 @@ def explain_highlight():
             dev_msg=prompt_builder(mode), 
             image_base64=image_base64,
             temperature=ai_temperature_control(mode))
-
+        # print("Step 4: About to log_insert"); sys.stdout.flush()
         log_insert(user_id, highlighted_text, explanation, mode, filename, session_id, image_file_path=image_file_path)
         #pass_to_google_forms(user_id, highlighted_text, explanation, mode, filename)
-        
+        # print("Step 5: Returning explanation"); sys.stdout.flush()
         return jsonify({
             "explanation": explanation
         })
     except Exception as e:
         import traceback
-        traceback.print_exc()
+        import sys
+        # print("Step 3.5: Exception in API_text_input or log_insert", e); sys.stdout.flush()
+        traceback.print_exc(); sys.stdout.flush()
         return jsonify({"error": str(e)}), 500

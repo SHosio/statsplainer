@@ -1,13 +1,12 @@
-import { Box, Button, Paper, TextField, IconButton, keyframes, Menu, MenuItem } from '@mui/material'; // Added keyframes
+import { Box, Button, Paper, TextField, IconButton, keyframes } from '@mui/material'; // Added keyframes
 import Grid from '@mui/material/Grid2';
 import React, {useState, useRef, useEffect} from "react";
 import InfoIcon from '@mui/icons-material/Info';
 import SendIcon from "@mui/icons-material/Send";
 import MicIcon from '@mui/icons-material/Mic';
 import MicOffIcon from '@mui/icons-material/MicOff';
-import TranslateIcon from '@mui/icons-material/Translate';
-import LanguageIcon from '@mui/icons-material/Language';
 import ReactMarkdown from 'react-markdown'; // Import ReactMarkdown
+import { apiCallPostText } from './ApiCalls';
 
 // Sidebar Function
 const NAVBAR_HEIGHT = 60;
@@ -26,6 +25,8 @@ export default function Sidebar({
   isLoading,
   setIsLoading,
   onHelpClick,
+  // Add sessionId prop
+  sessionId,
 }) {
     // intialised the state of hasSeenTour
     localStorage.setItem("hasSeenTour", "false");
@@ -41,37 +42,7 @@ export default function Sidebar({
         }
     }, []);
 
-    const handleTranslate = async (LanguageCode) => {
-        const modes = [
-            { messages: messageDefinition, setter: setMessageDefinition },
-            { messages: messageRealWorldAnalogy, setter: setMessageRealWorldAnalogy },
-            { messages: messageELI5, setter: setMessageELI5 },
-        ];
 
-        try {
-            console.log("start translate for all modes");
-
-            for (const mode of modes) {
-                const translatedMessages = [...mode.messages];
-                for (let i = 0; i < translatedMessages.length; i++) {
-                    const message = translatedMessages[i];
-                    if (message.sender === "AI" && message.text && !message.image) {
-                        let response = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${LanguageCode}&dt=t&q=${encodeURIComponent(message.text)}`);
-                        const data = await response.json();
-                        const translatedText = data[0].map(item => item[0]).join('');
-                        translatedMessages[i] = {
-                            ...message,
-                            text: translatedText,
-                        };
-                    }
-                }
-                mode.setter(translatedMessages);
-            }
-            
-        } catch (error) {
-            console.error("Translation error:", error);
-        }
-    };
 
     return (
         
@@ -168,7 +139,7 @@ export default function Sidebar({
             selectedChat === "Real world analogy" ? setMessageRealWorldAnalogy : setMessageELI5
             }
             setIsLoading={setIsLoading} // Pass setIsLoading down 
-            onTranslateClick={handleTranslate} // Pass down handle translate
+            sessionId={sessionId} // Pass sessionId down
         />
         </Box>
         
@@ -329,7 +300,7 @@ const LoadingDots = () => (
 
 // chat messageInputFunction
 
-const ChatMessageInput = ({addMessage, onTranslateClick, selectedChat, activePdfFilename, setIsLoading}) => { // Add setIsLoading prop
+const ChatMessageInput = ({addMessage, selectedChat, activePdfFilename, setIsLoading, sessionId}) => { // Add sessionId prop
 
     // store current input inside the message box
     const [userMessageInput, setUserMessageInput] = useState("");
@@ -339,40 +310,7 @@ const ChatMessageInput = ({addMessage, onTranslateClick, selectedChat, activePdf
     const recognitionRef = useRef(null);
 
 
-    // check which language is selected
-    const [anchorEl, setAnchorEl] = useState(null);
 
-    // check the state of whether the translate button is being pressed
-    const [isTranslating, ] = useState(false);
-
-
-    // language code array
-    // add more desired langauge here
-    const languages = [
-        { code: "zh", name: "Chinese" },
-        { code: "en", name: "English" },
-        { code: "fr", name: "French" },
-        { code: "de", name: "German" },
-        { code: "it", name: "Italian" },
-        { code: "ja", name: "Japanese" },
-        { code: "ko", name: "Korean" },
-        { code: "pt", name: "Portuguese" },
-        { code: "ru", name: "Russian" },
-        { code: "es", name: "Spanish" }
-      ];
-
-    const handleTranslateClick = (event) => {
-        setAnchorEl(event.currentTarget);
-    };
-
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
-
-    const handleLanguageSelect = (LanguageCode) => {
-        onTranslateClick(LanguageCode);
-        handleClose();
-    }
 
 
     useEffect(() => {
@@ -430,15 +368,21 @@ const ChatMessageInput = ({addMessage, onTranslateClick, selectedChat, activePdf
             setUserMessageInput("");
             setIsLoading(true); // Set loading before fetch
 
-            fetch("http://localhost:5000/explain-highlight", { // This fetch remains for typed input
-                method: "post",
-                credentials: 'include',
-                headers: {
-                    "Content-Type" : "application/json",
-                },
-                body: JSON.stringify({highlighted_text : userMessageInput, mode: selectedChat, filename: activePdfFilename, is_user_input: "yes"})
+            console.log("Chat payload:", {
+                highlighted_text: userMessageInput,
+                mode: selectedChat,
+                filename: activePdfFilename,
+                is_user_input: "yes",
+                session_id: sessionId || localStorage.getItem('session_id')
+            });
+            
+            apiCallPostText("explain-highlight", {
+              highlighted_text: userMessageInput,
+              mode: selectedChat,
+              filename: activePdfFilename,
+              is_user_input: "yes",
+              session_id: sessionId || localStorage.getItem('session_id')
             })
-            .then(response => response.json())
             .then(data => {
               addMessage(prevMessages =>[...prevMessages, {sender: "AI", text: data.explanation}]);
               setIsLoading(false); // Clear loading on success
@@ -544,25 +488,7 @@ const ChatMessageInput = ({addMessage, onTranslateClick, selectedChat, activePdf
             >
                 {isListening ? <MicOffIcon /> : <MicIcon />}
             </IconButton>
-            {/* translate button located on the top right corner of the response section */}
-            <IconButton
-                            
-                            onClick={handleTranslateClick}
-                            disabled={isTranslating}
-                            sx={{
-                                color: isTranslating ? `rgba(0,0,0,0.3)` : `rgba(147,197,253,0.9)`,
-                                backgroundColor: isTranslating? `rgba(2,1,1,0.1)` : `rgba(147,197,253,0.1)`,
-                                borderRadius: "12px",
-                                padding: "8px",
-                                transition: "all 0.3s ease",
-                                "&:hover" : {
-                                    color: isTranslating ? `rgba(0,0,0,0.3)` : `rgba(0,0,0,0.5)`,
-                                    transform: `scale(0.95)`,
-                                },
-                            }}
-                        >
-                            <TranslateIcon  />
-                </IconButton>   
+   
             <IconButton
                 onClick={sendMessage}
                 disabled={!userMessageInput.trim()}
@@ -586,36 +512,7 @@ const ChatMessageInput = ({addMessage, onTranslateClick, selectedChat, activePdf
             </IconButton>
 
 
-        {/* drop down menu to select between different language */}
-        <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleClose}
-            sx={{
-                "& .MuiPaper-root": {
-                    backgroundColor: `rgba(55,56,60,0.9)`,
-                    backdropFilter: `blur(8px)`,
-                }
-            }}
-        >
-            {languages.map((Language) => (
-                <MenuItem
-                    key={Language.code}
-                    onClick={() => handleLanguageSelect(Language.code)}
-                    disabled={isTranslating}
-                    sx={{
-                        color: isTranslating ? `rgba(255,255,255,0.5)` : `white`,
-                        "&:hover" : {
-                            backgroundColor: `rgba(255,255,255,0.1)`,
-                        },
-                    }}
-                >
-                    <LanguageIcon sx={{ mr:1}} />
-                    {Language.name}
-                </MenuItem>
-            ))}
 
-        </Menu>
         </Grid>
     )
 }

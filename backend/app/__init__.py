@@ -5,7 +5,7 @@ import os
 def create_app():
     print("🚀 create_app() called")
     app = Flask(__name__)
-    CORS(app, supports_credentials=True)
+    CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
     base_dir = os.path.abspath(os.path.dirname(__file__))
     project_root = os.path.abspath(os.path.join(base_dir, '..'))

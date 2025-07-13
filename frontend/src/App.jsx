@@ -16,7 +16,7 @@ function App() {
     
     document.cookie = `user_id=${user_id}; path=/`; 
 
-    fetch('http://localhost:5000/user_id', {
+    fetch('http://localhost:5050/user_id', {
       method: 'POST',
       credentials: 'include',
     })

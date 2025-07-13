@@ -210,7 +210,7 @@ export const PdfSidebar = ({ file, setTaskCompletion, isFromDashboard = false, s
             >
                 <Sidebar
                   setChatType={setChatType}
-                  activePdfFilename={file?.name}
+                  activePdfFilename={uploadedFilename || file?.name}
                   // Pass down state arrays and setters
                   messageDefinition={messageDefinition}
                   setMessageDefinition={setMessageDefinition}
@@ -222,6 +222,8 @@ export const PdfSidebar = ({ file, setTaskCompletion, isFromDashboard = false, s
                   isLoading={isLoading}
                   setIsLoading={setIsLoading}
                   onHelpClick={handleOpenTooltip}
+                  // Pass sessionId
+                  sessionId={sessionId}
                 />
           </Panel>
           </PanelGroup>

@@ -21,7 +21,9 @@ services:
     env_file:
       - ./backend/.env
     volumes:
+      - ./backend:/app
       - ./persistent_data/pdfs:/app/pdf_uploads
       - ./persistent_data/images:/app/img_uploads
       - ./persistent_data/database:/app/database
+      - ./backend/prompts:/app/prompts
 
