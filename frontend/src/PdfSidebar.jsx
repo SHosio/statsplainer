@@ -61,6 +61,13 @@ export const PdfSidebar = ({ file, setTaskCompletion, isFromDashboard = false, s
       setModeCompletion(true);
     } else if (temp === 3) {
       setTaskCompletion(true);
+      // --- Track completed PDFs in localStorage ---
+      const pdfKey = uploadedFilename || (file && file.name);
+      if (pdfKey) {
+        let completedPdfs = JSON.parse(localStorage.getItem('completedPdfs') || '{}');
+        completedPdfs[pdfKey] = true;
+        localStorage.setItem('completedPdfs', JSON.stringify(completedPdfs));
+      }
     }
   }, [chatType]);
 

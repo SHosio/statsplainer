@@ -10,6 +10,8 @@ import { LandingPage } from './Landingpage.jsx';
 import { DashboardPage  } from './Dashboard.jsx';
 import Grid from '@mui/material/Grid2';
 import { FinalPopUp } from './FinalPopUp';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
 
 export default function Router() {
   const location = useLocation();
@@ -18,8 +20,22 @@ export default function Router() {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [popUpDisplay, setPopUpDisplay] = useState(false);
   const [feedBackButton, setFeedbackButton] = useState(false);
+  const [showFeedbackSnackbar, setShowFeedbackSnackbar] = useState(false);
 
   const [taskCompletion, setTaskCompletion] = useState(false);
+
+  // Check completed PDFs on mount and when popup closes
+  useEffect(() => {
+    const checkCompletedPdfs = () => {
+      let completedPdfs = JSON.parse(localStorage.getItem('completedPdfs') || '{}');
+      const completedCount = Object.keys(completedPdfs).length;
+      if (completedCount >= 2) {
+        if (!feedBackButton) setShowFeedbackSnackbar(true);
+        setFeedbackButton(true);
+      }
+    };
+    checkCompletedPdfs();
+  }, [popUpDisplay]);
 
   useEffect(() => {
     if (taskCompletion) {
@@ -50,6 +66,11 @@ export default function Router() {
 
         <Route path='/dashboard' element={<DashboardPage setTaskCompletion={setTaskCompletion}/>} />
       </Routes>
+      <Snackbar open={showFeedbackSnackbar} autoHideDuration={6000} onClose={() => setShowFeedbackSnackbar(false)} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+        <MuiAlert elevation={6} variant="filled" onClose={() => setShowFeedbackSnackbar(false)} severity="info">
+          Feedback button unlocked! You can now view your learning summary and provide feedback.
+        </MuiAlert>
+      </Snackbar>
     </Grid>
   )
 }

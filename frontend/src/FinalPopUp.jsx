@@ -7,6 +7,7 @@ export const FinalPopUp = ({ setPopUpDisplay, setFeedbackButton }) => {
   const [summary, setSummary] = useState('');
   const [loading, setLoading] = useState(true);
   const [showSummary, setShowSummary] = useState(false);
+  const [userId, setUserId] = useState('');
 
   useEffect(() => {
     // Get session summary when popup opens
@@ -20,7 +21,16 @@ export const FinalPopUp = ({ setPopUpDisplay, setFeedbackButton }) => {
         setSummary('Unable to generate session summary at this time.');
         setLoading(false);
       });
+    // Get user_id from cookie
+    const match = document.cookie.match(/user_id=([^;]+)/);
+    if (match) setUserId(match[1]);
   }, []);
+
+  // Google Form prefill URL
+  const googleFormBase = "https://docs.google.com/forms/d/e/1FAIpQLSdWEFlG2ciIRUB7LchAd1K-ka8UUF8htg6ikMpG65t15E3dBA/viewform";
+  // Replace ENTRY_ID with the actual entry ID for user_id in your Google Form
+  const userIdEntryId = "2029882290";
+  const googleFormUrl = `${googleFormBase}?entry.${userIdEntryId}=${encodeURIComponent(userId)}`;
 
   return (
     <>
@@ -90,21 +100,14 @@ export const FinalPopUp = ({ setPopUpDisplay, setFeedbackButton }) => {
             <Button variant="contained" onClick={() => setShowSummary(true)} >
                 View My Learning Summary
             </Button>
-            <Button
-                variant="contained"
-                component="a"
-                href="https://docs.google.com/forms/d/e/1FAIpQLSdWEFlG2ciIRUB7LchAd1K-ka8UUF8htg6ikMpG65t15E3dBA/formResponse"
-                target="_blank"
-                rel="noopener noreferrer"
-                disabled={false}
-            >
-                Go to Feedback Form
-            </Button>
           </>
         ) : (
           <>
             <Button variant="contained" onClick={() => setShowSummary(false)} >
                 Back to Feedback
+            </Button>
+            <Button variant="contained" component="a" href={googleFormUrl} target="_blank" rel="noopener noreferrer" >
+                Go to Feedback Form
             </Button>
             <Button variant="contained" onClick={() => {setPopUpDisplay(false); setFeedbackButton(true);}} >
                 Complete Session
