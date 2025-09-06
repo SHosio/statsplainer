@@ -26,6 +26,9 @@ dist-ssr
 # Environment variables
 backend/.env
 
+# Claude Code configuration
+CLAUDE.md
+
 # Ignore all files in persistent_data subfolders
 persistent_data/database/*
 persistent_data/images/*
